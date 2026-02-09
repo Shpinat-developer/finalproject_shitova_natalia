@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "finalproject-shitova-natalia"
+version = "0.1.0"
+description = ""
+authors = ["Shpinat-developer <dzeshnik@mail.ru>"]
+readme = "README.md"
+ packages = [
+     { include = "valutatrade_hub" },
+ ]
+ 
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+project = "valutatrade_hub.cli.interface:main"
+
+
