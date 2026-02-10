@@ -11,6 +11,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+prettytable = "^3.17.0"
 
 
 [build-system]
