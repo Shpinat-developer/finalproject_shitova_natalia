@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List
 
@@ -11,6 +12,7 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 DATA_DIR = BASE_DIR / "data"
 USERS_FILE = DATA_DIR / "users.json"
 PORTFOLIOS_FILE = DATA_DIR / "portfolios.json"
+RATES_FILE = DATA_DIR / "rates.json"
 
 
 def load_users() -> List[User]:
@@ -62,4 +64,25 @@ def load_portfolios() -> list[dict]:
 def save_portfolios(portfolios: list[dict]) -> None:
     with PORTFOLIOS_FILE.open("w", encoding="utf-8") as f:
         json.dump(portfolios, f, ensure_ascii=False, indent=4)
+        
+        
+def load_rates() -> dict:
+    if not RATES_FILE.exists():
+        return {}
+    with RATES_FILE.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_rates(rates: dict) -> None:
+    with RATES_FILE.open("w", encoding="utf-8") as f:
+        json.dump(rates, f, ensure_ascii=False, indent=4)
+
+
+def is_rate_fresh(updated_at: str, max_age_minutes: int = 5) -> bool:
+    """Проверка «свежести» курса по времени обновления."""
+    try:
+        dt = datetime.fromisoformat(updated_at)
+    except ValueError:
+        return False
+    return datetime.now() - dt < timedelta(minutes=max_age_minutes)
 

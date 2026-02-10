@@ -1,9 +1,9 @@
 import shlex
-from valutatrade_hub.core.usecases import register_user, login_user, show_portfolio, buy_currency, sell_currency
+from valutatrade_hub.core.usecases import register_user, login_user, show_portfolio, buy_currency, sell_currency, get_rate
 from valutatrade_hub.core.models import User
+from valutatrade_hub.core.exceptions import InsufficientFundsError, CurrencyNotFoundError, ApiRequestError
 
 CURRENT_USER: User | None = None
-
 
 def main() -> None:
     print("ValutaTrade Hub CLI. Введите команду (help для справки, exit для выхода).")
@@ -24,7 +24,7 @@ def main() -> None:
 
         command, *args = parts
 
-        if command == "exit" or command == "quit":
+        if command in {"exit", "quit"}:
             print("Выход.")
             break
 
@@ -33,11 +33,22 @@ def main() -> None:
         elif command == "login":
             handle_login(args)
         elif command == "show-portfolio":
-            handle_show_portfolio(args)
+            if CURRENT_USER is None:
+                print("Сначала выполните login.")
+            else:
+                handle_show_portfolio(args)
         elif command == "buy":
-            handle_buy(args)
+            if CURRENT_USER is None:
+                print("Сначала выполните login.")
+            else:
+                handle_buy(args)
         elif command == "sell":
-            handle_sell(args)
+            if CURRENT_USER is None:
+                print("Сначала выполните login.")
+            else:
+                handle_sell(args)
+        elif command == "get-rate":
+            handle_get_rate(args)
         else:
             print(f"Неизвестная команда: {command}")
             
@@ -105,9 +116,7 @@ def handle_show_portfolio(args: list[str]) -> None:
     print(f"Итоговая стоимость портфеля в {base}: {total}")
     
 def handle_buy(args: list[str]) -> None:
-    if CURRENT_USER is None:
-        print("Сначала войдите в систему: login --username <имя> --password <пароль>")
-        return
+    global CURRENT_USER
 
     currency = None
     amount = None
@@ -123,10 +132,22 @@ def handle_buy(args: list[str]) -> None:
         op_msg, changes_msg = buy_currency(
             user_id=CURRENT_USER.user_id,
             currency_code=currency or "",
-            amount=float(amount) if amount is not None else 0.0,
-            base_currency="USD",
+            amount=amount or "",
         )
+    except CurrencyNotFoundError as exc:
+        print(str(exc))
+        print("Используйте 'help get-rate' или посмотрите список поддерживаемых валют.")
+        return
+    except InsufficientFundsError as exc:
+        # обычно для buy не нужно, но можно оставить на будущее
+        print(str(exc))
+        return
+    except ApiRequestError as exc:
+        print(str(exc))
+        print("Попробуйте повторить операцию позже или проверьте сеть.")
+        return
     except ValueError as exc:
+        # ошибки валидации amount и т.п.
         print(str(exc))
         return
 
@@ -151,16 +172,52 @@ def handle_sell(args: list[str]) -> None:
     try:
         op_msg, changes_msg = sell_currency(
             user_id=CURRENT_USER.user_id,
-            currency_code=currency or "",
-            amount=float(amount) if amount is not None else 0.0,
-            base_currency="USD",
+            currency_code=currency,
+            amount=amount,
         )
-    except ValueError as exc:
+    except InsufficientFundsError as exc:
+        print(str(exc))  # текст как есть
+        return
+    except CurrencyNotFoundError as exc:
         print(str(exc))
+        print("Используйте 'help get-rate' или посмотрите список поддерживаемых валют.")
+        return
+    except ApiRequestError as exc:
+        print(str(exc))
+        print("Попробуйте повторить операцию позже или проверьте соединение с интернетом.")
         return
 
     print(op_msg)
     print(changes_msg)
+    
+def handle_get_rate(args: list[str]) -> None:
+    from_code = None
+    to_code = None
+
+    it = iter(args)
+    for token in it:
+        if token == "--from":
+            from_code = next(it, None)
+        elif token == "--to":
+            to_code = next(it, None)
+
+    try:
+        rate_fwd, rate_rev, updated_at = get_rate(from_code, to_code)
+    except CurrencyNotFoundError as exc:
+        print(str(exc))
+        print("Используйте 'help get-rate' или проверьте код валюты.")
+        return
+    except ApiRequestError as exc:
+        print(str(exc))
+        print("Попробуйте повторить позже или проверьте сеть.")
+        return
+
+    print(
+        f"Курс {from_code.upper()}→{to_code.upper()}: {rate_fwd:.8f} "
+        f"(обновлено: {updated_at.replace('T', ' ')})"
+    )
+    print(f"Обратный курс {to_code.upper()}→{from_code.upper()}: {rate_rev:.2f}")
+
 
 
 

@@ -4,14 +4,18 @@ from datetime import datetime
 from typing import Tuple
 from prettytable import PrettyTable
 
+from valutatrade_hub.core.currencies import get_currency
+from valutatrade_hub.core.exceptions import CurrencyNotFoundError, InsufficientFundsError, ApiRequestError
 from valutatrade_hub.core.models import User, Portfolio, Wallet
 from valutatrade_hub.core.utils import (
     load_users,
     save_users,
     load_portfolios,
     save_portfolios,
+    load_rates, 
+    save_rates, 
+    is_rate_fresh
 )
-
 
 def register_user(username: str, password: str) -> Tuple[User, str]:
     """Регистрация нового пользователя.
@@ -137,22 +141,18 @@ def buy_currency(
 
     Возвращает (сообщение_об_операции, сообщение_об_изменениях_портфеля).
     """
-    code = (currency_code or "").upper()
-    if not code:
-        raise ValueError("currency не может быть пустым")
+    currency = get_currency(currency_code)
 
-    # 2. Валидировать amount > 0
     try:
         amount_value = float(amount)
     except (TypeError, ValueError):
-        raise ValueError("'amount' должен быть положительным числом")  # noqa: B904
+        raise ValueError("'amount' должен быть положительным числом")
 
     if amount_value <= 0:
-        raise ValueError("'amount' должен быть положительным числом")  # [web:246][web:251]
+        raise ValueError("'amount' должен быть положительным числом")
 
     base = base_currency.upper()
 
-    # 3. Загрузить портфели и найти портфель пользователя
     portfolios = load_portfolios()
     portfolio_dict = next(
         (p for p in portfolios if p["user_id"] == user_id),
@@ -163,35 +163,33 @@ def buy_currency(
 
     wallets = portfolio_dict.setdefault("wallets", {})
 
-    # 3. Если кошелька нет — создать
-    wallet_data = wallets.get(code)
+    wallet_data = wallets.get(currency.code)
     if wallet_data is None:
-        wallets[code] = {"balance": 0.0}
-        wallet_data = wallets[code]
+        wallets[currency.code] = {"balance": 0.0}
+        wallet_data = wallets[currency.code]
 
     old_balance = float(wallet_data.get("balance", 0.0))
-
-    # 4. Увеличить баланс кошелька
     new_balance = old_balance + amount_value
     wallet_data["balance"] = new_balance
 
-    # 5. Заглушка для курса: считаем, что 1 единица currency = 1 base
     rate = 1.0
     estimated_cost = amount_value * rate
 
     save_portfolios(portfolios)
 
     operation_msg = (
-        f"Покупка выполнена: {amount_value:.4f} {code} по курсу {rate:.2f} {base}/{code}"
+        f"Покупка выполнена: {amount_value:.4f} {currency.code} "
+        f"({currency.name}) по курсу {rate:.2f} {base}/{currency.code}"
     )
     changes_msg = (
-        f"Изменения в портфеле:\n"
-        f"- {code}: было {old_balance:.4f} → стало {new_balance:.4f}\n"
+        "Изменения в портфеле:\n"
+        f"- {currency.code}: было {old_balance:.4f} → стало {new_balance:.4f}\n"
         f"Оценочная стоимость покупки: {estimated_cost:,.2f} {base}"
     )
 
     return operation_msg, changes_msg
-    
+
+
 def sell_currency(
     user_id: int,
     currency_code: str,
@@ -202,14 +200,15 @@ def sell_currency(
 
     Возвращает (сообщение_об_операции, сообщение_об_изменениях_портфеля).
     """
-    code = (currency_code or "").upper()
-    if not code:
-        raise ValueError("currency не может быть пустым")
+    try:
+        currency = get_currency(currency_code)
+    except CurrencyNotFoundError as exc:
+        raise ValueError(str(exc)) from exc
 
     try:
         amount_value = float(amount)
     except (TypeError, ValueError):
-        raise ValueError("'amount' должен быть положительным числом")  # [web:246][web:251]
+        raise ValueError("'amount' должен быть положительным числом")
 
     if amount_value <= 0:
         raise ValueError("'amount' должен быть положительным числом")
@@ -226,39 +225,89 @@ def sell_currency(
 
     wallets = portfolio_dict.get("wallets") or {}
 
-    # 3. Проверить, что кошелёк существует и средств хватает
-    wallet_data = wallets.get(code)
+    wallet_data = wallets.get(currency.code)
     if wallet_data is None:
-        raise ValueError(f"У вас нет кошелька '{code}'. "
+        raise ValueError(
+            f"У вас нет кошелька '{currency.code}'. "
             "Добавьте валюту: она создаётся автоматически при первой покупке."
         )
-        
+
     old_balance = float(wallet_data.get("balance", 0.0))
     if amount_value > old_balance:
-        raise ValueError(
-            f"Недостаточно средств: доступно {old_balance:.4f} {code}, "
-            f"требуется {amount_value:.4f} {code}"
+        # вместо ValueError
+        raise InsufficientFundsError(
+            available=old_balance,
+            required=amount_value,
+            code=currency.code,
         )
 
-
-    # 4. Уменьшить баланс
     new_balance = old_balance - amount_value
     wallet_data["balance"] = new_balance
 
-    # 5. Заглушка для курса: 1:1, начисление в USD можно добавить позже
     rate = 1.0
     estimated_income = amount_value * rate
 
     save_portfolios(portfolios)
 
     operation_msg = (
-        f"Продажа выполнена: {amount_value:.4f} {code} по курсу {rate:.2f} {base}/{code}"
+        f"Продажа выполнена: {amount_value:.4f} {currency.code} "
+        f"({currency.name}) по курсу {rate:.2f} {base}/{currency.code}"
     )
     changes_msg = (
-        f"Изменения в портфеле:\n"
-        f"- {code}: было {old_balance:.4f} → стало {new_balance:.4f}\n"
+        "Изменения в портфеле:\n"
+        f"- {currency.code}: было {old_balance:.4f} → стало {new_balance:.4f}\n"
         f"Оценочная выручка: {estimated_income:,.2f} {base}"
     )
 
     return operation_msg, changes_msg
 
+
+def get_rate(from_currency: str, to_currency: str) -> Tuple[float, float, str]:
+    try:
+        from_cur = get_currency(from_currency)
+        to_cur = get_currency(to_currency)
+    except CurrencyNotFoundError:
+        # просто пробрасываем – CLI обработает отдельно
+        raise
+
+    from_code = from_cur.code
+    to_code = to_cur.code
+
+    if from_code == to_code:
+        raise ValueError("Коды валют должны отличаться")
+
+    pair_key = f"{from_code}_{to_code}"
+    reverse_key = f"{to_code}_{from_code}"
+
+    rates = load_rates()
+
+    pair = rates.get(pair_key)
+    if pair and "rate" in pair and "updated_at" in pair:
+        if is_rate_fresh(pair["updated_at"]):
+            rate_forward = float(pair["rate"])
+            updated_at = pair["updated_at"]
+            rev = rates.get(reverse_key)
+            if rev and "rate" in rev:
+                rate_reverse = float(rev["rate"])
+            else:
+                rate_reverse = 1.0 / rate_forward if rate_forward != 0 else 0.0
+            return rate_forward, rate_reverse, updated_at
+
+    now = datetime.now().isoformat(timespec="seconds")
+    if from_code == "USD" and to_code == "BTC":
+        rate_forward = 0.00001685
+    elif from_code == "BTC" and to_code == "USD":
+        rate_forward = 59337.21
+    else:
+        raise ApiRequestError(f"Курс {from_code}→{to_code} недоступен. Повторите попытку позже.")
+
+    rate_reverse = 1.0 / rate_forward if rate_forward != 0 else 0.0
+
+    rates[pair_key] = {"rate": rate_forward, "updated_at": now}
+    rates[reverse_key] = {"rate": rate_reverse, "updated_at": now}
+    rates["source"] = "ParserService"
+    rates["last_refresh"] = now
+
+    save_rates(rates)
+
+    return rate_forward, rate_reverse, now

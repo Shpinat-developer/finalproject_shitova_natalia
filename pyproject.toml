@@ -4,10 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["Shpinat-developer <dzeshnik@mail.ru>"]
 readme = "README.md"
- packages = [
-     { include = "valutatrade_hub" },
- ]
- 
+packages = [
+    { include = "valutatrade_hub" },
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.12"
