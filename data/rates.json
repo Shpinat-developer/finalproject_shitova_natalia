@@ -1,12 +1,12 @@
 {
     "USD_BTC": {
         "rate": 1.685e-05,
-        "updated_at": "2026-02-10T15:19:24"
+        "updated_at": "2026-02-11T14:41:40"
     },
     "BTC_USD": {
         "rate": 59347.18100890208,
-        "updated_at": "2026-02-10T15:19:24"
+        "updated_at": "2026-02-11T14:41:40"
     },
     "source": "ParserService",
-    "last_refresh": "2026-02-10T15:19:24"
+    "last_refresh": "2026-02-11T14:41:40"
 }

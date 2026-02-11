@@ -16,6 +16,10 @@ from valutatrade_hub.core.utils import (
     save_rates, 
     is_rate_fresh
 )
+from valutatrade_hub.infra.settings import SettingsLoader
+from valutatrade_hub.decorators import log_action
+
+settings = SettingsLoader()
 
 def register_user(username: str, password: str) -> Tuple[User, str]:
     """Регистрация нового пользователя.
@@ -131,6 +135,7 @@ def show_portfolio(user_id: int, base_currency: str = "USD") -> Tuple[str, float
 
     return table.get_string(), total
     
+@log_action("BUY", verbose=True)    
 def buy_currency(
     user_id: int,
     currency_code: str,
@@ -151,7 +156,7 @@ def buy_currency(
     if amount_value <= 0:
         raise ValueError("'amount' должен быть положительным числом")
 
-    base = base_currency.upper()
+    base = (base_currency or settings.get("base_currency", "USD")).upper()
 
     portfolios = load_portfolios()
     portfolio_dict = next(
@@ -189,7 +194,7 @@ def buy_currency(
 
     return operation_msg, changes_msg
 
-
+@log_action("SELL", verbose=True)
 def sell_currency(
     user_id: int,
     currency_code: str,
@@ -282,8 +287,11 @@ def get_rate(from_currency: str, to_currency: str) -> Tuple[float, float, str]:
     rates = load_rates()
 
     pair = rates.get(pair_key)
+    ttl_sec = int(settings.get("rates_ttl_seconds", 300))
+    
     if pair and "rate" in pair and "updated_at" in pair:
-        if is_rate_fresh(pair["updated_at"]):
+    
+        if is_rate_fresh(pair["updated_at"], max_age_minutes=ttl_sec // 60):
             rate_forward = float(pair["rate"])
             updated_at = pair["updated_at"]
             rev = rates.get(reverse_key)

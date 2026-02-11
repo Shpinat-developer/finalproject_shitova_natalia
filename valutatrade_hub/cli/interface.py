@@ -3,6 +3,10 @@ from valutatrade_hub.core.usecases import register_user, login_user, show_portfo
 from valutatrade_hub.core.models import User
 from valutatrade_hub.core.exceptions import InsufficientFundsError, CurrencyNotFoundError, ApiRequestError
 
+from valutatrade_hub.logging_config import setup_logging
+
+setup_logging()
+
 CURRENT_USER: User | None = None
 
 def main() -> None:
