@@ -1,4 +1,3 @@
-# valutatrade_hub/decorators.py
 import functools
 import logging
 from datetime import datetime

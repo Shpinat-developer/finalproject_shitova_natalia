@@ -1,12 +1,9 @@
 from __future__ import annotations
-
 import json
-import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List
-
-from .models import User, Portfolio
+from .models import User
 from valutatrade_hub.infra.settings import SettingsLoader
 
 settings = SettingsLoader()

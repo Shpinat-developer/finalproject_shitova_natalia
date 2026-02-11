@@ -3,7 +3,6 @@ from typing import Dict
 import hashlib
 
 """Класс User (пользователь системы)   """
-
 class User:
     def __init__(
         self,

@@ -24,3 +24,32 @@
 Оценочная выручка: 0.01 USD'
 2026-02-11T14:45:56 [INFO] valutatrade.actions: 2026-02-11T14:45:56 action=SELL user_id=1 currency='BTC' amount=999999 base='' result=ERROR error_type=InsufficientFundsError error_message='Недостаточно средств: доступно 0.0850 BTC, требуется 999999.0000 BTC'
 2026-02-11T14:46:11 [INFO] valutatrade.actions: 2026-02-11T14:46:11 action=BUY user_id=1 currency='QQQ' amount=1 base='' result=ERROR error_type=CurrencyNotFoundError error_message='QQQ'
+2026-02-11T15:00:24 [INFO] valutatrade.actions: 2026-02-11T15:00:24 action=BUY user_id=1 currency='BTC' amount=0.01 base='' result=OK details='Изменения в портфеле:
+- BTC: было 0.0850 → стало 0.0950
+Оценочная стоимость покупки: 0.01 USD'
+2026-02-11T15:00:47 [INFO] valutatrade.actions: 2026-02-11T15:00:47 action=SELL user_id=1 currency='BTC' amount=0.005 base='' result=OK details='Изменения в портфеле:
+- BTC: было 0.0950 → стало 0.0900
+Оценочная выручка: 0.01 USD'
+2026-02-11T15:01:06 [INFO] valutatrade.actions: 2026-02-11T15:01:06 action=SELL user_id=1 currency='BTC' amount=999999 base='' result=ERROR error_type=InsufficientFundsError error_message='Недостаточно средств: доступно 0.0900 BTC, требуется 999999.0000 BTC'
+2026-02-11T15:01:59 [INFO] valutatrade.actions: 2026-02-11T15:01:59 action=BUY user_id=1 currency='QQQ' amount=1 base='' result=ERROR error_type=CurrencyNotFoundError error_message='Неизвестная валюта 'QQQ''
+2026-02-11T15:16:17 [INFO] valutatrade.actions: 2026-02-11T15:16:17 action=BUY user_id=1 currency='BTC' amount=0.01 base='' result=OK details='Изменения в портфеле:
+- BTC: было 0.0900 → стало 0.1000
+Оценочная стоимость покупки: 0.01 USD'
+2026-02-11T15:16:30 [INFO] valutatrade.actions: 2026-02-11T15:16:30 action=BUY user_id=1 currency='QQQ' amount=1 base='' result=ERROR error_type=CurrencyNotFoundError error_message='Неизвестная валюта 'QQQ''
+2026-02-11T15:16:43 [INFO] valutatrade.actions: 2026-02-11T15:16:43 action=SELL user_id=1 currency='BTC' amount=999999 base='' result=ERROR error_type=InsufficientFundsError error_message='Недостаточно средств: доступно 0.1000 BTC, требуется 999999.0000 BTC'
+2026-02-11T20:44:00 [INFO] valutatrade.actions: 2026-02-11T20:44:00 action=BUY user_id=1 currency='BTC' amount=0.01 base='' result=OK details='Изменения в портфеле:
+- BTC: было 0.1000 → стало 0.1100
+Оценочная стоимость покупки: 0.01 USD'
+2026-02-11T20:44:15 [INFO] valutatrade.actions: 2026-02-11T20:44:15 action=BUY user_id=1 currency='QQQ' amount=1 base='' result=ERROR error_type=CurrencyNotFoundError error_message='Неизвестная валюта 'QQQ''
+2026-02-11T20:44:30 [INFO] valutatrade.actions: 2026-02-11T20:44:30 action=SELL user_id=1 currency='BTC' amount=0.005 base='' result=OK details='Изменения в портфеле:
+- BTC: было 0.1100 → стало 0.1050
+Оценочная выручка: 0.01 USD'
+2026-02-11T20:44:47 [INFO] valutatrade.actions: 2026-02-11T20:44:47 action=SELL user_id=1 currency='BTC' amount=999999 base='' result=ERROR error_type=InsufficientFundsError error_message='Недостаточно средств: доступно 0.1050 BTC, требуется 999999.0000 BTC'
+2026-02-11T21:31:22 [INFO] valutatrade.actions: 2026-02-11T21:31:22 action=BUY user_id=1 currency='BTC' amount=0.01 base='' result=OK details='Изменения в портфеле:
+- BTC: было 0.1050 → стало 0.1150
+Оценочная стоимость покупки: 0.01 USD'
+2026-02-11T21:31:35 [INFO] valutatrade.actions: 2026-02-11T21:31:35 action=BUY user_id=1 currency='QQQ' amount=1 base='' result=ERROR error_type=CurrencyNotFoundError error_message='Неизвестная валюта 'QQQ''
+2026-02-11T21:31:50 [INFO] valutatrade.actions: 2026-02-11T21:31:50 action=SELL user_id=1 currency='BTC' amount=0.005 base='' result=OK details='Изменения в портфеле:
+- BTC: было 0.1150 → стало 0.1100
+Оценочная выручка: 0.01 USD'
+2026-02-11T21:31:59 [INFO] valutatrade.actions: 2026-02-11T21:31:59 action=SELL user_id=1 currency='BTC' amount=999999 base='' result=ERROR error_type=InsufficientFundsError error_message='Недостаточно средств: доступно 0.1100 BTC, требуется 999999.0000 BTC'

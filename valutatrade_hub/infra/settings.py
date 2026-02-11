@@ -19,7 +19,7 @@ class SettingsLoader:
         return cls._instance
 
     def __init__(self) -> None:
-        # чтобы не перезагружать конфиг при каждом вызове SettingsLoader()
+
         if hasattr(self, "_initialized") and self._initialized:
             return
         self._initialized = True
@@ -32,7 +32,7 @@ class SettingsLoader:
         pyproject_path = project_root / "pyproject.toml"
 
         if not pyproject_path.exists():
-            # минимальный дефолт, чтобы не падать
+
             self._config = {}
             return
 

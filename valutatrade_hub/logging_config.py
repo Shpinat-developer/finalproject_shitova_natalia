@@ -2,7 +2,6 @@ from __future__ import annotations
 import logging
 from logging.handlers import RotatingFileHandler  # [web:452][web:450]
 from pathlib import Path
-from typing import Optional
 from valutatrade_hub.infra.settings import SettingsLoader
 
 
@@ -38,7 +37,7 @@ def setup_logging(force: bool = False) -> None:
     # Удаляем старые хендлеры, чтобы при повторном вызове не дублировать вывод
     logger.handlers.clear()
 
-    # Хендлер ротации файла: ~1 МБ, 5 резервных копий [web:450][web:457]
+    # Хендлер ротации файла: ~1 МБ, 5 резервных копий
     file_handler = RotatingFileHandler(
         log_path,
         maxBytes=1_000_000,
@@ -47,12 +46,12 @@ def setup_logging(force: bool = False) -> None:
     )
     file_formatter = logging.Formatter(
         fmt=log_format,
-        datefmt="%Y-%m-%dT%H:%M:%S",  # ISO-подобный формат [web:456][web:459]
+        datefmt="%Y-%m-%dT%H:%M:%S",  # ISO-подобный формат
     )
     file_handler.setFormatter(file_formatter)
     logger.addHandler(file_handler)
 
-    # Параллельно выводим в консоль (удобно при отладке)
+    # Параллельно выводим в консоль
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(file_formatter)
     logger.addHandler(console_handler)
