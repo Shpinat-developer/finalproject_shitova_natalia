@@ -272,3 +272,12 @@ Parser Service (заглушка)
 
 logs/actions.log
 
+
+## Демонстрация
+
+По ссылке показан полный цикл: register → login → buy/sell → show-portfolio → get-rate; демонстрация обработки ошибок .
+
+https://asciinema.org/a/G8kvY9oMFsPboVCq
+
+
+

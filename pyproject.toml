@@ -8,11 +8,9 @@ packages = [
     { include = "valutatrade_hub" },
 ]
 
-
 [tool.poetry.dependencies]
 python = "^3.12"
 prettytable = "^3.17.0"
-
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.15.0"
@@ -31,4 +29,11 @@ base_currency = "USD"
 logs_dir = "logs"
 log_format = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = ["venv", ".venv", "dist", "__pycache__"]
 
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = []
